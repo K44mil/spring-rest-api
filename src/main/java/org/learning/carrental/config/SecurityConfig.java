@@ -2,6 +2,7 @@ package org.learning.carrental.config;
 
 import org.learning.carrental.security.CustomUserDetailsService;
 import org.learning.carrental.security.JwtAuthenticationEntryPoint;
+import org.learning.carrental.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
