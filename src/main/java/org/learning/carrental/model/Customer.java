@@ -1,11 +1,25 @@
 package org.learning.carrental.model;
 
+import java.io.Serializable;
+
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 @Entity
-@Table(name = "customers")
+@Table(name = "customers", uniqueConstraints = {
+		@UniqueConstraint(columnNames = {
+				"pesel"
+		}),
+		@UniqueConstraint(columnNames = {
+				"phoneNumber"
+		}),
+		@UniqueConstraint(columnNames = {
+				"driverLicenseNumber"
+		})
+})
 public class Customer {
 	
 	@Id
@@ -13,20 +27,22 @@ public class Customer {
 	private Long id;
 	
 	@Embedded
+	@JsonSerialize(as = Name.class)
 	private Name name;
 	
 	@Embedded
+	@JsonSerialize(as = Address.class)
 	private Address address;
 	
-	@NotNull
+	@NotBlank
 	@Size(max = 20)
 	private String pesel;
 	
-	@NotNull
+	@NotBlank
 	@Size(max = 20)
 	private String driverLicenseNumber;
 	
-	@NotNull
+	@NotBlank
 	@Size(max = 20)
 	private String phoneNumber;
 	
@@ -38,8 +54,8 @@ public class Customer {
 		
 	}
 
-	public Customer(Name name, Address address, @NotNull @Size(max = 20) String pesel,
-			@NotNull @Size(max = 20) String driverLicenseNumber, @NotNull @Size(max = 20) String phoneNumber,
+	public Customer(Name name, Address address, @NotBlank @Size(max = 20) String pesel,
+			@NotBlank @Size(max = 20) String driverLicenseNumber, @NotBlank @Size(max = 20) String phoneNumber,
 			User user) {
 		super();
 		this.name = name;

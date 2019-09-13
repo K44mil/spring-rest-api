@@ -6,6 +6,9 @@ import java.util.Collections;
 import javax.validation.Valid;
 
 import org.learning.carrental.exception.AppException;
+import org.learning.carrental.model.Address;
+import org.learning.carrental.model.Customer;
+import org.learning.carrental.model.Name;
 import org.learning.carrental.model.Role;
 import org.learning.carrental.model.RoleName;
 import org.learning.carrental.model.User;
@@ -13,6 +16,7 @@ import org.learning.carrental.payload.ApiResponse;
 import org.learning.carrental.payload.JwtAuthenticationResponse;
 import org.learning.carrental.payload.LoginRequest;
 import org.learning.carrental.payload.SignUpRequest;
+import org.learning.carrental.repository.CustomerRepository;
 import org.learning.carrental.repository.RoleRepository;
 import org.learning.carrental.repository.UserRepository;
 import org.learning.carrental.security.JwtTokenProvider;
@@ -44,6 +48,9 @@ public class AuthController {
 	RoleRepository roleRepository;
 	
 	@Autowired
+	CustomerRepository customerRepository;
+	
+	@Autowired
 	PasswordEncoder passwordEncoder;
 	
 	@Autowired
@@ -68,12 +75,12 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
+			return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Username is already taken!"),
 					HttpStatus.BAD_REQUEST);	
 		}
 		
 		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
+			return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Email Address already in use!"),
 					HttpStatus.BAD_REQUEST);
 		}
 		
@@ -90,11 +97,48 @@ public class AuthController {
 		
 		User result = userRepository.save(user);
 		
+		if (result.isCustomer()) {
+			// Create Customer Profile
+			if (customerRepository.existsByPesel(signUpRequest.getCustomer().getPesel())) {
+				userRepository.delete(result);
+				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "PESEL is already in db."),
+						HttpStatus.BAD_REQUEST);
+			} else if (customerRepository.existsByPhoneNumber(signUpRequest.getCustomer().getPhoneNumber())) {
+				userRepository.delete(result);
+				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Phone number is already in db."),
+						HttpStatus.BAD_REQUEST);
+			} else if (customerRepository.existsByDriverLicenseNumber(signUpRequest.getCustomer().getDriverLicenseNumber())) {
+				userRepository.delete(result);
+				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Driver's license number is already in db."),
+						HttpStatus.BAD_REQUEST);
+			} else {
+				Customer customerToSave = createCustomer(signUpRequest.getCustomer(), result);
+				customerRepository.save(customerToSave);
+			}
+		} else {
+			// Create Employee Profile
+			
+		}
+		
 		URI location = ServletUriComponentsBuilder
 				.fromCurrentContextPath().path("/api/users/{username}")
 				.buildAndExpand(result.getUsername()).toUri();
 		
 		return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
+	}
+	
+	private Customer createCustomer(Customer customer, User user) {	
+		Name name = new Name(customer.getName().getFirstName(),
+							 customer.getName().getMiddleName(),
+							 customer.getName().getLastName());
+		
+		Address address = new Address(customer.getAddress().getCity(),
+									  customer.getAddress().getStreet(),
+									  customer.getAddress().getHouseNumber(),
+									  customer.getAddress().getFlatNumber(),
+									  customer.getAddress().getZipCode());
+		
+		return new Customer(name, address, customer.getPesel(), customer.getDriverLicenseNumber(), customer.getPhoneNumber(), user);
 	}
 	
 }

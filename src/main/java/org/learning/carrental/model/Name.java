@@ -1,11 +1,13 @@
 package org.learning.carrental.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Embeddable
-public class Name {
+public class Name{
 	
 	@NotNull
 	@Size(max = 40)

@@ -4,6 +4,12 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import org.learning.carrental.model.Customer;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 public class SignUpRequest {
 	
 	@NotBlank
@@ -19,14 +25,17 @@ public class SignUpRequest {
 	@Size(min = 6, max = 20)
 	private String password;
 	
-	@NotBlank
-	private boolean isCustomer;
+	@JsonProperty
+	private Boolean isCustomer;
 	
-	@NotBlank
-	private boolean isActive;
+	@JsonProperty
+	private Boolean isActive;
 	
-	@NotBlank
-	private boolean isBlocked;
+	@JsonProperty
+	private Boolean isBlocked;
+	
+	@JsonProperty
+	private Customer customer;
 
 	public String getUsername() {
 		return username;
@@ -52,27 +61,37 @@ public class SignUpRequest {
 		this.password = password;
 	}
 
-	public boolean isCustomer() {
+	public Boolean isCustomer() {
 		return isCustomer;
 	}
 
-	public void setCustomer(boolean isCustomer) {
+	public void setIsCustomer(Boolean isCustomer) {
 		this.isCustomer = isCustomer;
 	}
 
-	public boolean isActive() {
+	public Boolean isActive() {
 		return isActive;
 	}
 
-	public void setActive(boolean isActive) {
+	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
 	}
 
-	public boolean isBlocked() {
+	public Boolean isBlocked() {
 		return isBlocked;
 	}
 
-	public void setBlocked(boolean isBlocked) {
+	public void setIsBlocked(Boolean isBlocked) {
 		this.isBlocked = isBlocked;
 	}
+
+	public Customer getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
+	}
+
+	
 }
