@@ -1,4 +1,4 @@
-package org.learning.carrental.model;
+package org.learning.carrental.model.embedded;
 
 import java.io.Serializable;
 
@@ -53,5 +53,15 @@ public class Name{
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+	
+	public boolean isValid() {
+		
+		if (firstName.length() > 40 || firstName.equals(""))
+			return false;
+		if (lastName.length() > 40 || lastName.equals(""))
+			return false;
+		
+		return true;
 	}
 }

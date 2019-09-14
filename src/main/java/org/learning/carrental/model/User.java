@@ -63,6 +63,11 @@ public class User extends DateAudit {
 			mappedBy = "user")
 	private Customer customer;
 	
+	@OneToOne(fetch = FetchType.LAZY,
+			cascade = CascadeType.ALL,
+			mappedBy = "user")
+	private Employee employee;
+	
 	public User() {
 		
 	}
@@ -158,4 +163,15 @@ public class User extends DateAudit {
 	public void setCustomer(Customer customer) {
 		this.customer = customer;
 	}
+	
+	@JsonIgnore
+	public Employee getEmployee() {
+		return employee;
+	}
+
+	@JsonIgnore
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
+	}
+	
 }

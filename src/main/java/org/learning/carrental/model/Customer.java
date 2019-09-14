@@ -6,6 +6,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import org.learning.carrental.model.embedded.Address;
+import org.learning.carrental.model.embedded.Name;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @Entity
@@ -120,5 +123,21 @@ public class Customer {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+	
+	public boolean isValid() {
+		
+		if (!name.isValid())
+			return false;
+		if (!address.isValid())
+			return false;
+		if (pesel.length() > 20 || pesel.equals(""))
+			return false;
+		if (driverLicenseNumber.length() > 20 || driverLicenseNumber.equals(""))
+			return false;
+		if (phoneNumber.length() > 20 || phoneNumber.equals(""))
+			return false;
+		
+		return true;
 	}
 }

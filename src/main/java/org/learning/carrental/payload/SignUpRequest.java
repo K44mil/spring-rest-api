@@ -5,6 +5,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import org.learning.carrental.model.Customer;
+import org.learning.carrental.model.Employee;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,6 +37,9 @@ public class SignUpRequest {
 	
 	@JsonProperty
 	private Customer customer;
+	
+	@JsonProperty
+	private Employee employee;
 
 	public String getUsername() {
 		return username;
@@ -93,5 +97,11 @@ public class SignUpRequest {
 		this.customer = customer;
 	}
 
-	
+	public Employee getEmployee() {
+		return employee;
+	}
+
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
+	}
 }

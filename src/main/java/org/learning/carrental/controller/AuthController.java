@@ -6,17 +6,19 @@ import java.util.Collections;
 import javax.validation.Valid;
 
 import org.learning.carrental.exception.AppException;
-import org.learning.carrental.model.Address;
 import org.learning.carrental.model.Customer;
-import org.learning.carrental.model.Name;
+import org.learning.carrental.model.Employee;
 import org.learning.carrental.model.Role;
 import org.learning.carrental.model.RoleName;
 import org.learning.carrental.model.User;
+import org.learning.carrental.model.embedded.Address;
+import org.learning.carrental.model.embedded.Name;
 import org.learning.carrental.payload.ApiResponse;
 import org.learning.carrental.payload.JwtAuthenticationResponse;
 import org.learning.carrental.payload.LoginRequest;
 import org.learning.carrental.payload.SignUpRequest;
 import org.learning.carrental.repository.CustomerRepository;
+import org.learning.carrental.repository.EmployeeRepository;
 import org.learning.carrental.repository.RoleRepository;
 import org.learning.carrental.repository.UserRepository;
 import org.learning.carrental.security.JwtTokenProvider;
@@ -51,6 +53,9 @@ public class AuthController {
 	CustomerRepository customerRepository;
 	
 	@Autowired
+	EmployeeRepository employeeRepository;
+	
+	@Autowired
 	PasswordEncoder passwordEncoder;
 	
 	@Autowired
@@ -74,6 +79,7 @@ public class AuthController {
 	
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+		// Validate user data
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Username is already taken!"),
 					HttpStatus.BAD_REQUEST);	
@@ -83,7 +89,32 @@ public class AuthController {
 			return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Email Address already in use!"),
 					HttpStatus.BAD_REQUEST);
 		}
-		
+		// Validate customer data
+		if (signUpRequest.isCustomer()) {		
+			if (customerRepository.existsByPesel(signUpRequest.getCustomer().getPesel())) {
+				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "PESEL is already in db."),
+						HttpStatus.BAD_REQUEST);
+			}		
+			if (customerRepository.existsByPhoneNumber(signUpRequest.getCustomer().getPhoneNumber())) {
+				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Phone number is already in db."),
+						HttpStatus.BAD_REQUEST);
+			}	
+			if (customerRepository.existsByDriverLicenseNumber(signUpRequest.getCustomer().getDriverLicenseNumber())) {
+				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Driver's license number is already in db."),
+						HttpStatus.BAD_REQUEST);
+			}	
+			if (!validateCustomer(signUpRequest.getCustomer())) {
+				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Customer data is invalid."),
+						HttpStatus.BAD_REQUEST);
+			}		
+		} else {
+			// Validate employee data
+			if (!validateEmployee(signUpRequest.getEmployee())) {
+				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Employee data is invalid."),
+						HttpStatus.BAD_REQUEST);
+			}
+		}
+
 		// Creating user's account
 		User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getPassword(),
 							signUpRequest.isCustomer(), signUpRequest.isActive(), signUpRequest.isBlocked());
@@ -99,25 +130,12 @@ public class AuthController {
 		
 		if (result.isCustomer()) {
 			// Create Customer Profile
-			if (customerRepository.existsByPesel(signUpRequest.getCustomer().getPesel())) {
-				userRepository.delete(result);
-				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "PESEL is already in db."),
-						HttpStatus.BAD_REQUEST);
-			} else if (customerRepository.existsByPhoneNumber(signUpRequest.getCustomer().getPhoneNumber())) {
-				userRepository.delete(result);
-				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Phone number is already in db."),
-						HttpStatus.BAD_REQUEST);
-			} else if (customerRepository.existsByDriverLicenseNumber(signUpRequest.getCustomer().getDriverLicenseNumber())) {
-				userRepository.delete(result);
-				return new ResponseEntity<ApiResponse>(new ApiResponse(false, "Driver's license number is already in db."),
-						HttpStatus.BAD_REQUEST);
-			} else {
-				Customer customerToSave = createCustomer(signUpRequest.getCustomer(), result);
-				customerRepository.save(customerToSave);
-			}
+			Customer customerToSave = createCustomer(signUpRequest.getCustomer(), result);
+			customerRepository.save(customerToSave);
 		} else {
 			// Create Employee Profile
-			
+			Employee employeeToSave = createEmployee(signUpRequest.getEmployee(), result);
+			employeeRepository.save(employeeToSave);
 		}
 		
 		URI location = ServletUriComponentsBuilder
@@ -139,6 +157,29 @@ public class AuthController {
 									  customer.getAddress().getZipCode());
 		
 		return new Customer(name, address, customer.getPesel(), customer.getDriverLicenseNumber(), customer.getPhoneNumber(), user);
+	}
+	
+	private Employee createEmployee(Employee employee, User user) {
+		Name name = new Name(employee.getName().getFirstName(),
+							 employee.getName().getMiddleName(),
+							 employee.getName().getLastName());
+		
+		return new Employee(name, employee.getSalary(), employee.getHireDate(), employee.getBirthDate(),
+							employee.getPhoneNumber(), employee.getGender(), user);
+	}
+	
+	private boolean validateCustomer(Customer customer) {
+		if (customer.isValid()) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean validateEmployee(Employee employee) {
+		if (employee.isValid()) {
+			return true;
+		}
+		return false;
 	}
 	
 }

@@ -1,4 +1,4 @@
-package org.learning.carrental.model;
+package org.learning.carrental.model.embedded;
 
 import java.io.Serializable;
 
@@ -18,10 +18,10 @@ public class Address {
 	private String street;
 	
 	@NotNull
-	@Size(max = 100)
+	@Size(max = 20)
 	private String houseNumber;
 	
-	@Size(max = 100)
+	@Size(max = 20)
 	private String flatNumber;
 	
 	@NotNull
@@ -81,5 +81,21 @@ public class Address {
 
 	public void setZipCode(String zipCode) {
 		this.zipCode = zipCode;
+	}
+	
+	public boolean isValid() {
+		
+		if (city.length() > 100 || city.equals(""))
+			return false;
+		if (street.length() > 100 || street.equals(""))
+			return false;
+		if (houseNumber.length() > 20 || houseNumber.equals(""))
+			return false;
+		if (flatNumber.length() > 20)
+			return false;
+		if (zipCode.length() > 6 || zipCode.equals(""))
+			return false;
+		
+		return true;
 	}
 }
