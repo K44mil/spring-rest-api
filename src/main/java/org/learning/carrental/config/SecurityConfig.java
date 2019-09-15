@@ -84,6 +84,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/auth/**")
             	.permitAll();
 		
+		// h2 config
+		http.headers().frameOptions().disable();
+		
 		http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 	}
 }
