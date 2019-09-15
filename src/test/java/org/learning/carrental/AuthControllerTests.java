@@ -1,20 +1,27 @@
 package org.learning.carrental;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Order;
+import org.junit.runners.MethodSorters;
+import org.learning.carrental.model.SignUpCustomerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import static io.restassured.RestAssured.given;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AuthControllerTests {
 
+	private static final Logger logger = LoggerFactory.getLogger(AuthControllerTests.class);
+	
 	private final String SIGNUP_PATH = "/api/auth/signup";
 	private final String SIGNIN_PATH = "/api/auth/signin";
 	
@@ -25,58 +32,114 @@ public class AuthControllerTests {
 	}
 	
 	@Test
-	public void testCreateUser() throws Exception {
+	@Order(1)
+	public void testCreateUserCustomer() throws Exception {
 		
-		Map<String, String> name = new HashMap<>();
-		name.put("firstName", "Jan");
-		name.put("middleName", "");
-		name.put("lastName", "Kowalski");
-
-		Map<String, String> address = new HashMap<>();
-		address.put("city", "Rzeszow");
-		address.put("street", "Wolnosci");
-		address.put("houseNumber", "100");
-		address.put("flatNumber", "105");
-		address.put("zipCode", "30-100");
+		Map<String, Object> request = SignUpCustomerRequest.builder()
+				.username("test")
+				.password("zaq1@@WSX")
+				.email("test@test.pl")
+				.isActive(false)
+				.isBlocked(false)
+				.isCustomer(true)
+				.firstName("Jan")
+				.middleName("Mariusz")
+				.lastName("Kowalski")
+				.city("Rzeszow")
+				.street("Zielona")
+				.houseNumber("14")
+				.flatNumber("104")
+				.zipCode("30-120")
+				.pesel("9910009099")
+				.driverLicenseNumber("100/1020/132")
+				.phoneNumber("999888000")
+				.toHashMap();
+						
 		
-		Map<String, Object> customer = new HashMap<>();
-		customer.put("name", name);
-		customer.put("address", address);
-		customer.put("pesel", "9900010101");
-		customer.put("driverLicenseNumber", "100/10/2003");
-		customer.put("phoneNumber", "999000999");
-		
-		Map<String, Object> request = new HashMap<>();
-		request.put("username", "test");
-		request.put("password", "password");
-		request.put("email", "email@email.pl");
-		request.put("isCustomer", true);
-		request.put("isActive", false);
-		request.put("isBlocked", false);
-		request.put("customer", customer);
-		
-//		given()
-//			.contentType("application/json")
-//			.accept("application/json")
-//			.body(request)
-//			.when()
-//			.post(SIGNUP_PATH)
-//			.then()
-//			.statusCode(415)
-//			.contentType("application/json");
-		
-		Map<String, String> signin = new HashMap<>();
-		signin.put("usernameOrEmail", "test");
-		signin.put("password", "password");
-		
-		given()
+		Response response = RestAssured.given()
 			.contentType("application/json")
 			.accept("application/json")
-			.body(signin)
+			.body(request)
 			.when()
-			.post(SIGNIN_PATH)
+			.post(SIGNUP_PATH)
 			.then()
-			.statusCode(200);
+			.statusCode(201)
+			.extract()
+			.response();
+	
+	}
+	
+	@Test
+	@Order(2)
+	public void testCreateUserCustomer_UsernameExists() throws Exception {
+	
+		Map<String, Object> request = SignUpCustomerRequest.builder()
+				.username("test")
+				.password("zaq1@@WSX")
+				.email("test@test.pl")
+				.isActive(false)
+				.isBlocked(false)
+				.isCustomer(true)
+				.firstName("Jan")
+				.middleName("Mariusz")
+				.lastName("Kowalski")
+				.city("Rzeszow")
+				.street("Zielona")
+				.houseNumber("14")
+				.flatNumber("104")
+				.zipCode("30-120")
+				.pesel("9910009099")
+				.driverLicenseNumber("100/1020/132")
+				.phoneNumber("999888000")
+				.toHashMap();
+		
+		Response response = RestAssured.given()
+			.contentType("application/json")
+			.accept("application/json")
+			.body(request)
+			.when()
+			.post(SIGNUP_PATH)
+			.then()
+			.statusCode(400)
+			.extract()
+			.response();
+	}
+	
+	@Test
+	@Order(3)
+	public void testCreateUserCustomer_EmailExists() throws Exception {
+		
+		Map<String, Object> request = SignUpCustomerRequest.builder()
+				.username("test1")
+				.password("zaq1@@WSX")
+				.email("test@test.pl")
+				.isActive(false)
+				.isBlocked(false)
+				.isCustomer(true)
+				.firstName("Jan")
+				.middleName("Mariusz")
+				.lastName("Kowalski")
+				.city("Rzeszow")
+				.street("Zielona")
+				.houseNumber("14")
+				.flatNumber("104")
+				.zipCode("30-120")
+				.pesel("9910009099")
+				.driverLicenseNumber("100/1020/132")
+				.phoneNumber("999888000")
+				.toHashMap();
+		
+		Response response = RestAssured.given()
+			.contentType("application/json")
+			.accept("application/json")
+			.body(request)
+			.when()
+			.post(SIGNUP_PATH)
+			.then()
+			.statusCode(400)
+			.extract()
+			.response();
+		
 	}
 	
 }
